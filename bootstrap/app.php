@@ -1,45 +1,11 @@
 <?php
 
-declare(strict_types=1);
+use Dotenv\Dotenv;
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-/*
-|--------------------------------------------------------------------------
-| BASE PATH
-|--------------------------------------------------------------------------
-*/
-define('BASE_PATH', dirname(__DIR__));
-define('BASE_URL', 'http://localhost:8080/MediaLibrary-MVC-');
-
-/*
-|--------------------------------------------------------------------------
-| AUTOLOADER
-|--------------------------------------------------------------------------
-*/
-require_once BASE_PATH . '/vendor/autoload.php';
-
-/*
-|--------------------------------------------------------------------------
-| ENV
-|--------------------------------------------------------------------------
-*/
-if (file_exists(BASE_PATH . '/.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
-    $dotenv->load();
-}
-
-/*
-|--------------------------------------------------------------------------
-| USE CLASSES
-|--------------------------------------------------------------------------
-*/
 use App\Core\Database;
 use App\Core\Router;
 
 use App\Controllers\CatalogController;
-use App\Controllers\DetailsController;
 use App\Controllers\AuthController;
 use App\Controllers\SuggestController;
 
@@ -53,7 +19,15 @@ use App\Services\UserService;
 
 /*
 |--------------------------------------------------------------------------
-| DB CONNECTION
+| ENV
+|--------------------------------------------------------------------------
+*/
+$dotenv = Dotenv::createImmutable(BASE_PATH);
+$dotenv->load();
+
+/*
+|--------------------------------------------------------------------------
+| DB
 |--------------------------------------------------------------------------
 */
 $db = Database::connection();
@@ -85,11 +59,10 @@ $router = new Router();
 
 /*
 |--------------------------------------------------------------------------
-| REGISTER SERVICES (IMPORTANT)
+| REGISTER SERVICES (VERY IMPORTANT)
 |--------------------------------------------------------------------------
 */
 $router->registerService(CatalogController::class, $catalogService);
-$router->registerService(DetailsController::class, $catalogService);
 $router->registerService(SuggestController::class, $formatService);
 $router->registerService(AuthController::class, $userService);
 
