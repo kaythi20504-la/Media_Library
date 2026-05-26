@@ -19,7 +19,7 @@ define('BASE_URL', 'http://localhost:8080/MediaLibrary-MVC-');
 |--------------------------------------------------------------------------
 */
 require_once BASE_PATH . '/vendor/autoload.php';
-
+session_start(); // ✅ MUST BE HERE
 /*
 |--------------------------------------------------------------------------
 | ENV
@@ -50,7 +50,7 @@ use App\Repositories\UserRepository;
 use App\Services\CatalogService;
 use App\Services\FormatService;
 use App\Services\UserService;
-
+use App\Controllers\Api\ApiUserController;
 /*
 |--------------------------------------------------------------------------
 | DB CONNECTION
@@ -92,7 +92,7 @@ $router->registerService(CatalogController::class, $catalogService);
 $router->registerService(DetailsController::class, $catalogService);
 $router->registerService(SuggestController::class, $formatService);
 $router->registerService(AuthController::class, $userService);
-
+$router->registerService(ApiUserController::class, $userService);
 /*
 |--------------------------------------------------------------------------
 | ROUTES

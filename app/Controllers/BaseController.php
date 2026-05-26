@@ -15,7 +15,8 @@ abstract class BaseController
     {
         extract($data);
 
-require BASE_PATH . '/resources/views/' . $path . '.php';    }
+        require BASE_PATH . '/resources/views/' . $path . '.php';
+    }
 
     /**
      * Redirect helper
@@ -36,6 +37,7 @@ require BASE_PATH . '/resources/views/' . $path . '.php';    }
         header('Content-Type: application/json');
 
         echo json_encode($data, JSON_PRETTY_PRINT);
+
         exit;
     }
 
@@ -53,5 +55,40 @@ require BASE_PATH . '/resources/views/' . $path . '.php';    }
     protected function post(string $key, $default = null)
     {
         return $_POST[$key] ?? $default;
+    }
+
+ protected function requireLogin(): void
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['user'])) {
+        $_SESSION['error'] = 'Please login first';
+        $this->redirect('index.php?page=login');
+    }
+}
+
+protected function guestOnly(): void
+{
+    if (isset($_SESSION['user'])) {
+        $this->redirect('index.php?page=catalog');
+    }
+}
+
+    /**
+     * Get current logged in user
+     */
+    protected function user(): ?array
+    {
+        return $_SESSION['user'] ?? null;
+    }
+
+    /**
+     * Check authentication status
+     */
+    protected function isLoggedIn(): bool
+    {
+        return isset($_SESSION['user']);
     }
 }

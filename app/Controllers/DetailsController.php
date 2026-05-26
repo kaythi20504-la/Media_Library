@@ -4,47 +4,42 @@ namespace App\Controllers;
 
 use App\Services\CatalogService;
 
-/**
- * Handles displaying detailed information
- * for a single catalog item.
- */
-
-class DetailsController
+class DetailsController extends BaseController
 {
     private CatalogService $catalogService;
 
     public function __construct(CatalogService $catalogService)
     {
-        // Inject catalog service dependency
         $this->catalogService = $catalogService;
     }
 
-    // Show item details page
-    public function show()
+    public function show(): void
     {
-        // Validate item ID from URL
+        // Protect route
+        $this->requireLogin();
+
+        // Get ID safely
         $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-        // Redirect if ID is invalid
+        // Invalid ID → redirect
         if (!$id) {
-            header("Location: " . BASE_URL . "/Public/index.php?page=catalog");
-            exit;
+            $this->redirect('index.php?page=catalog');
+            return;
         }
 
-        // Get item data from service
-        // $item = $this->CatalogService->single_item_array($id);
+        // Get item
         $item = $this->catalogService->getById($id);
-        // Redirect if item does not exist
-        if (empty($item)) {
-            header("Location: " . BASE_URL . "/Public/index.php?page=catalog");
-            exit;
+
+        // Not found → redirect
+        if (!$item) {
+            $this->redirect('index.php?page=catalog');
+            return;
         }
 
-        // Page information
-        $pageTitle = $item['title'];
-        $section   = $item['category'];
-
-        // Load details view
-        require BASE_PATH . '/resources/views/details.php';
+        // Render view properly
+        $this->view('details', [
+            'item' => $item,
+            'user' => $this->user()
+        ]);
     }
 }

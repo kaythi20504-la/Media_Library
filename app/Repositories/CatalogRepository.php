@@ -4,97 +4,72 @@ namespace App\Repositories;
 
 use App\Interfaces\CatalogRepositoryInterface;
 
-class CatalogRepository
-    extends BaseRepository
-    implements CatalogRepositoryInterface
+class CatalogRepository extends BaseRepository implements CatalogRepositoryInterface
 {
     protected string $table = 'view_catalog';
-
     protected string $primaryKey = 'media_id';
 
-    public function getAll(
-        ?int $limit = null,
-        int $offset = 0
-    ): array {
-
+    // =========================
+    // GET ALL
+    // =========================
+    public function getAll(?int $limit = null, int $offset = 0): array
+    {
         $sql = "
-            SELECT
-                media_id,
-                title,
-                category,
-                img
+            SELECT media_id, title, category, img
             FROM {$this->table}
-
-            ORDER BY
-                REPLACE(
-                    REPLACE(
-                        REPLACE(title, 'The ', ''),
-                    'An ', ''),
-                'A ', '')
+            ORDER BY REPLACE(REPLACE(REPLACE(title, 'The ', ''), 'An ', ''), 'A ', '')
         ";
 
-        $sql .= $this->buildLimitOffset(
-            $limit,
-            $offset
-        );
+        $sql .= $this->buildLimitOffset($limit, $offset);
 
         return $this->fetchAll($sql);
     }
 
-    public function count(
-        array $filters = []
-    ): int {
-
-        $search = $filters['search'] ?? null;
-        $category = $filters['category'] ?? null;
-
+    // =========================
+    // COUNT FILTERED
+    // =========================
+    public function count(array $filters = []): int
+    {
         $sql = "
-            SELECT COUNT(DISTINCT vc.media_id)
-
+            SELECT COUNT(DISTINCT vc.media_id) AS total
             FROM view_catalog vc
-
             WHERE 1 = 1
         ";
 
         $params = [];
 
-        if ($search !== null) {
+        if (!empty($filters['search'])) {
 
             $sql .= "
                 AND (
                     vc.title LIKE :search
-
                     OR EXISTS (
                         SELECT 1
                         FROM Media_People mp
-                        JOIN People p
-                            ON p.people_id = mp.people_id
-                        WHERE
-                            mp.media_id = vc.media_id
-                            AND p.fullname LIKE :search
+                        JOIN People p ON p.people_id = mp.people_id
+                        WHERE mp.media_id = vc.media_id
+                        AND p.fullname LIKE :search
                     )
                 )
             ";
 
-            $params['search'] = "%{$search}%";
+            $params['search'] = '%' . $filters['search'] . '%';
         }
 
-        if ($category !== null) {
+        if (!empty($filters['category'])) {
 
-            $sql .= "
-                AND LOWER(vc.category)
-                    = LOWER(:category)
-            ";
-
-            $params['category'] = $category;
+            $sql .= " AND LOWER(vc.category) = LOWER(:category)";
+            $params['category'] = $filters['category'];
         }
 
-        return $this->fetchCount(
-            $sql,
-            $params
-        );
+        $row = $this->fetchOne($sql, $params);
+
+        return (int) ($row['total'] ?? 0);
     }
 
+    // =========================
+    // SEARCH
+    // =========================
     public function search(
         ?string $search = null,
         ?string $category = null,
@@ -103,121 +78,74 @@ class CatalogRepository
     ): array {
 
         $sql = "
-            SELECT DISTINCT
-                vc.media_id,
-                vc.title,
-                vc.category,
-                vc.img
-
+            SELECT DISTINCT vc.media_id, vc.title, vc.category, vc.img
             FROM view_catalog vc
-
             WHERE 1 = 1
         ";
 
         $params = [];
 
-        if ($search !== null) {
+        if ($search) {
 
             $sql .= "
                 AND (
                     vc.title LIKE :search
-
                     OR EXISTS (
                         SELECT 1
                         FROM Media_People mp
-                        JOIN People p
-                            ON p.people_id = mp.people_id
-                        WHERE
-                            mp.media_id = vc.media_id
-                            AND p.fullname LIKE :search
+                        JOIN People p ON p.people_id = mp.people_id
+                        WHERE mp.media_id = vc.media_id
+                        AND p.fullname LIKE :search
                     )
                 )
             ";
 
-            $params['search'] = "%{$search}%";
+            $params['search'] = '%' . $search . '%';
         }
 
-        if ($category !== null) {
-
-            $sql .= "
-                AND LOWER(vc.category)
-                    = LOWER(:category)
-            ";
-
+        if ($category) {
+            $sql .= " AND LOWER(vc.category) = LOWER(:category)";
             $params['category'] = $category;
         }
 
         $sql .= "
-            ORDER BY
-                REPLACE(
-                    REPLACE(
-                        REPLACE(vc.title, 'The ', ''),
-                    'An ', ''),
-                'A ', '')
+            ORDER BY REPLACE(REPLACE(REPLACE(vc.title, 'The ', ''), 'An ', ''), 'A ', '')
         ";
 
-        $sql .= $this->buildLimitOffset(
-            $limit,
-            $offset
-        );
+        $sql .= $this->buildLimitOffset($limit, $offset);
 
-        return $this->fetchAll(
-            $sql,
-            $params
-        );
+        return $this->fetchAll($sql, $params);
     }
 
-    public function getByCategory(
-        string $category,
-        ?int $limit = null,
-        int $offset = 0
-    ): array {
-
-        return $this->search(
-            null,
-            $category,
-            $limit,
-            $offset
-        );
+    // =========================
+    // CATEGORY
+    // =========================
+    public function getByCategory(string $category, ?int $limit = null, int $offset = 0): array
+    {
+        return $this->search(null, $category, $limit, $offset);
     }
 
+    // =========================
+    // RANDOM
+    // =========================
     public function getRandom(): array
     {
-        return $this->fetchAll("
-            SELECT *
-            FROM view_random
-        ");
+        return $this->fetchAll("SELECT * FROM view_random");
     }
 
-    public function getById(
-        int $id
-    ): ?array {
-
-        $sql = "
-            SELECT
-                media_id,
-                title,
-                category,
-                img,
-                format,
-                year,
-                genre,
-                publisher,
-                isbn,
-                fullname,
-                role
-
+    // =========================
+    // DETAILS
+    // =========================
+    public function getById(int $id): ?array
+    {
+        $rows = $this->fetchAll("
+            SELECT media_id, title, category, img, format, year,
+                   genre, publisher, isbn, fullname, role
             FROM view_item_detail
-
             WHERE media_id = :id
-        ";
+        ", ['id' => $id]);
 
-        $rows = $this->fetchAll(
-            $sql,
-            ['id' => $id]
-        );
-
-        if (empty($rows)) {
+        if (!$rows) {
             return null;
         }
 
@@ -234,15 +162,8 @@ class CatalogRepository
         ];
 
         foreach ($rows as $row) {
-
-            if (
-                !empty($row['role'])
-                && !empty($row['fullname'])
-            ) {
-
-                $item[
-                    strtolower($row['role'])
-                ][] = $row['fullname'];
+            if (!empty($row['role']) && !empty($row['fullname'])) {
+                $item[strtolower($row['role'])][] = $row['fullname'];
             }
         }
 

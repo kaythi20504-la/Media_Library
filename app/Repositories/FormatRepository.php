@@ -5,27 +5,17 @@ namespace App\Repositories;
 use PDO;
 use App\Interfaces\FormatRepositoryInterface;
 
-class FormatRepository
-    extends BaseRepository
-    implements FormatRepositoryInterface
+class FormatRepository extends BaseRepository implements FormatRepositoryInterface
 {
     public function __construct(PDO $db)
     {
         parent::__construct($db);
     }
 
-    /**
-     * Formats dropdown
-     */
-    public function getFormatDropDown(
-        ?string $category = null
-    ): array {
-
+    public function getFormatDropDown(?string $category = null): array
+    {
         try {
-
-            $sql = "
-                CALL sp_get_formats_by_category(:category)
-            ";
+            $sql = "CALL sp_get_formats_by_category(:category)";
 
             $rows = $this->fetchAll($sql, [
                 'category' => $category
@@ -43,21 +33,12 @@ class FormatRepository
         return $this->groupFormats($rows);
     }
 
-    /**
-     * Fallback (VIEW)
-     */
-    private function getFormatsFromView(
-        ?string $category
-    ): array {
-
+    private function getFormatsFromView(?string $category): array
+    {
         $sql = "
-            SELECT DISTINCT
-                LOWER(category) AS category,
-                format
+            SELECT DISTINCT LOWER(category) AS category, format
             FROM view_catalog
-            WHERE
-                :category IS NULL
-                OR LOWER(category) = LOWER(:category)
+            WHERE (:category IS NULL OR LOWER(category) = LOWER(:category))
             ORDER BY category, format
         ";
 
@@ -68,34 +49,17 @@ class FormatRepository
         return $this->groupFormats($rows);
     }
 
-    /**
-     * Category dropdown
-     */
     public function getCategoryDropDown(): array
     {
-        $sql = "
-            SELECT DISTINCT category
-            FROM view_catalog
-            ORDER BY category
-        ";
+        $sql = "SELECT DISTINCT category FROM view_catalog ORDER BY category";
 
-        return $this->db
-            ->query($sql)
-            ->fetchAll(PDO::FETCH_COLUMN);
+        return $this->db->query($sql)->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    /**
-     * Genres dropdown
-     */
-    public function getGenresDropDown(
-        ?string $category = null
-    ): array {
-
+    public function getGenresDropDown(?string $category = null): array
+    {
         try {
-
-            $sql = "
-                CALL sp_get_genres_by_category(:category)
-            ";
+            $sql = "CALL sp_get_genres_by_category(:category)";
 
             $rows = $this->fetchAll($sql, [
                 'category' => $category
@@ -113,21 +77,12 @@ class FormatRepository
         return $this->groupGenres($rows);
     }
 
-    /**
-     * Fallback genres view
-     */
-    private function getGenresFromView(
-        ?string $category
-    ): array {
-
+    private function getGenresFromView(?string $category): array
+    {
         $sql = "
-            SELECT DISTINCT
-                LOWER(category) AS category,
-                genre
+            SELECT DISTINCT LOWER(category) AS category, genre
             FROM view_catalog
-            WHERE
-                :category IS NULL
-                OR LOWER(category) = LOWER(:category)
+            WHERE (:category IS NULL OR LOWER(category) = LOWER(:category))
             ORDER BY category, genre
         ";
 
@@ -138,9 +93,6 @@ class FormatRepository
         return $this->groupGenres($rows);
     }
 
-    /**
-     * Helper: group formats
-     */
     private function groupFormats(array $rows): array
     {
         $format = [];
@@ -152,9 +104,6 @@ class FormatRepository
         return $format;
     }
 
-    /**
-     * Helper: group genres
-     */
     private function groupGenres(array $rows): array
     {
         $genre = [];
@@ -166,17 +115,10 @@ class FormatRepository
         return $genre;
     }
 
-    /**
-     * Helper: detect missing procedure
-     */
-    private function isMissingProcedure(
-        \PDOException $e,
-        string $procedure
-    ): bool {
-
+    private function isMissingProcedure(\PDOException $e, string $procedure): bool
+    {
         $msg = $e->getMessage();
 
-        return str_contains($msg, $procedure)
-            || str_contains($msg, 'procedure');
+        return str_contains($msg, $procedure) || str_contains($msg, 'procedure');
     }
 }

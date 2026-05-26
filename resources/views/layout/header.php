@@ -1,5 +1,3 @@
-<?php session_start(); ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,7 +77,7 @@
 
                 <li>
                     <a href="<?= BASE_URL ?>/Public/index.php?page=logout">
-                        🚪 Logout
+                        Logout
                     </a>
                 </li>
 
@@ -87,13 +85,13 @@
 
                 <li>
                     <a href="<?= BASE_URL ?>/Public/index.php?page=login">
-                        🔑 Login
+                         Login
                     </a>
                 </li>
 
                 <li>
                     <a href="<?= BASE_URL ?>/Public/index.php?page=register">
-                        📝 Register
+                        Register
                     </a>
                 </li>
 

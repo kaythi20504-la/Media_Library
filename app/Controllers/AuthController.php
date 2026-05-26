@@ -49,7 +49,7 @@ class AuthController extends BaseController
             return;
         }
 
-        $this->userService->register($data);
+        $this->userService->createUser($data);
 
         header("Location: index.php?page=login");
         exit;
