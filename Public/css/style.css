@@ -576,6 +576,7 @@ a img {
 
     margin-bottom: 20px;
 }
+
 /* ===================================
    MODERN REGISTER DESIGN
 =================================== */
@@ -589,105 +590,125 @@ a img {
 
     padding: 40px 20px;
 
-    /* WHITE BACKGROUND */
-    background: #ffffff;
+    background: #f5f6fa;
 }
 
 /* REGISTER CARD */
 .modern-register-card {
+
     width: 100%;
-    max-width: 450px;
+    max-width: 460px;
 
-    padding: 45px;
+    padding: 50px 45px;
 
-    border-radius: 24px;
+    border-radius: 28px;
 
-    /* MODERN CARD COLOR */
     background: linear-gradient(
         135deg,
-        #fdfbfc 0%,
-        #f8f6f7 100%
+        #ffffff 0%,
+        #fdf7f7 100%
     );
 
     box-shadow:
-        0 12px 35px rgba(0,0,0,0.18);
+        0 15px 40px rgba(0,0,0,0.12);
 
     text-align: center;
+
+    animation: fadeUp 0.5s ease;
 }
 
 /* TITLE */
 .modern-register-card h1 {
-    font-size: 40px;
 
-    color: rgb(236, 82, 82);
+    font-size: 42px;
 
-    margin-bottom: 10px;
+    color: #ef5350;
 
-    font-weight: bold;
+    margin-bottom: 12px;
+
+    font-weight: 700;
 }
 
 /* SUBTITLE */
 .subtitle {
-    color: rgba(21, 19, 19, 0.9);
+
+    color: #666;
 
     margin-bottom: 35px;
 
     font-size: 16px;
+
+    line-height: 1.5;
 }
 
 /* INPUT GROUP */
 .input-group {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 /* INPUT */
 .input-group input {
+
     width: 100%;
 
-    padding: 15px;
+    padding: 16px 18px;
 
-    border: none;
+    border: 1.5px solid #e5e7eb;
 
-    border-radius: 14px;
+    border-radius: 16px;
 
-    background: rgba(255,255,255,0.2);
+    background: #ffffff;
 
-    color: rgb(25, 20, 20);
+    color: #333;
 
     font-size: 16px;
 
     outline: none;
 
+    transition: all 0.3s ease;
+
     box-sizing: border-box;
 
-    transition: all 0.3s ease;
+    box-shadow:
+        0 3px 10px rgba(0,0,0,0.04);
 }
 
 /* PLACEHOLDER */
 .input-group input::placeholder {
-    color: rgba(17, 15, 15, 0.8);
+    color: #9ca3af;
 }
 
 /* INPUT FOCUS */
 .input-group input:focus {
-    background: rgba(255,255,255,0.3);
 
-    transform: scale(1.02);
+    border-color: #ef7d7d;
+
+    box-shadow:
+        0 0 0 4px rgba(239,125,125,0.18);
+
+    transform: translateY(-1px);
 }
 
-/* MODERN REGISTER BUTTON */
+/* REGISTER BUTTON */
 .register-btn {
+
     width: 100%;
 
-    padding: 15px;
+    padding: 16px;
+
+    margin-top: 10px;
 
     border: none;
 
-    border-radius: 14px;
+    border-radius: 16px;
 
-    background: white;
+    background: linear-gradient(
+        135deg,
+        #ef7d7d 0%,
+        #f46d44 100%
+    );
 
-    color: #ff4f81;
+    color: white;
 
     font-size: 18px;
 
@@ -696,51 +717,177 @@ a img {
     cursor: pointer;
 
     transition: all 0.3s ease;
+
+    box-shadow:
+        0 8px 20px rgba(239,125,125,0.25);
 }
 
 /* BUTTON HOVER */
 .register-btn:hover {
-    background: #ffe6ee;
 
     transform: translateY(-2px);
 
     box-shadow:
-        0 8px 20px rgba(0,0,0,0.15);
+        0 12px 25px rgba(239,125,125,0.35);
+}
+
+/* BUTTON ACTIVE */
+.register-btn:active {
+    transform: scale(0.98);
 }
 
 /* BOTTOM TEXT */
 .bottom-text {
-    margin-top: 25px;
 
-    color: rgb(14, 12, 12);
+    margin-top: 28px;
+
+    color: #666;
 
     font-size: 15px;
 }
 
 /* LOGIN LINK */
 .bottom-text a {
-    color: rgb(22, 20, 20);
+
+    color: #ef5350;
 
     font-weight: bold;
 
     text-decoration: none;
+
+    transition: 0.3s;
 }
 
 .bottom-text a:hover {
     text-decoration: underline;
 }
 
-/* ERROR BOX */
-.error-box {
-    background: rgba(255,255,255,0.15);
+/* =========================
+   MODERN ERROR ALERT
+========================= */
 
-    border: 1px solid rgba(255,255,255,0.2);
+.alert {
 
-    color: white;
+    width: 100%;
 
-    padding: 12px;
+    padding: 14px 18px;
 
-    border-radius: 12px;
+    margin-bottom: 22px;
 
-    margin-bottom: 20px;
+    border-radius: 14px;
+
+    font-size: 14px;
+
+    text-align: left;
+
+    animation: fadeIn 0.3s ease;
+}
+
+/* ERROR STYLE */
+.alert-error {
+
+    background: #ffe5e5;
+
+    border-left: 5px solid #ff4d4f;
+
+    color: #b42318;
+
+    box-shadow:
+        0 4px 12px rgba(255,77,79,0.15);
+}
+
+/* MULTIPLE ERRORS */
+.alert-error div {
+    margin-bottom: 6px;
+}
+
+.alert-error div:last-child {
+    margin-bottom: 0;
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeUp {
+
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   MODERN ERROR ALERT
+   ========================= */
+
+.alert {
+    width: 100%;
+
+    padding: 14px 18px;
+
+    margin-bottom: 22px;
+
+    border-radius: 14px;
+
+    font-size: 14px;
+
+    text-align: left;
+
+    animation: fadeIn 0.3s ease;
+}
+
+/* ERROR STYLE */
+.alert-error {
+    background: #ffe5e5;
+
+    border-left: 5px solid #ff4d4f;
+
+    color: #b42318;
+
+    box-shadow:
+        0 4px 12px rgba(255, 77, 79, 0.15);
+}
+
+/* ERROR ITEMS */
+.alert-error div {
+    margin-bottom: 6px;
+}
+
+.alert-error div:last-child {
+    margin-bottom: 0;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+
+    
 }

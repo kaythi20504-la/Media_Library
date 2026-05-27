@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Request;
+
+class RegisterUserRequest
+{
+    public static function rules(): array
+    {
+        return [
+            'username' => [
+                'required' => true,
+                'min' => 3,
+                'max' => 50,
+            ],
+            'email' => [
+                'required' => true,
+                'email' => true,
+                'max' => 100,
+            ],
+            'password' => [
+                'required' => true,
+                'min' => 8,
+                'strong' => true,
+            ],
+            'confirm_password' => [
+                'required' => true,
+                'match' => 'password',
+            ],
+        ];
+    }
+}

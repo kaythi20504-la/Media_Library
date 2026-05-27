@@ -20,10 +20,9 @@ $router->get('details', [DetailsController::class, 'show']);
 |--------------------------------------------------------------------------
 */
 $router->get('register', [AuthController::class, 'showRegister']);
-$router->post('register-submit', [AuthController::class, 'register']);
-
+$router->post('register-submit', [AuthController::class, 'registerSubmit']); // ✅ FIXED
 $router->get('login', [AuthController::class, 'showLogin']);
-$router->post('login-submit', [AuthController::class, 'login']);
+$router->post('login-submit', [AuthController::class, 'loginSubmit']);
 $router->get('logout', [App\Controllers\AuthController::class, 'logout']);
 /*
 |--------------------------------------------------------------------------

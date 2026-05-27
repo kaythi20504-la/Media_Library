@@ -13,21 +13,13 @@ class AuthController extends BaseController
         $this->userService = $userService;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SHOW LOGIN PAGE
-    |--------------------------------------------------------------------------
-    */
+    /* LOGIN PAGE */
     public function showLogin(): void
     {
         $this->view('auth/login');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SHOW REGISTER PAGE
-    |--------------------------------------------------------------------------
-    */
+    /* REGISTER PAGE */
     public function showRegister(): void
     {
         $this->view('auth/register');
@@ -35,71 +27,69 @@ class AuthController extends BaseController
 
     /*
     |--------------------------------------------------------------------------
-    | REGISTER USER
+    | LOGIN SUBMIT
     |--------------------------------------------------------------------------
     */
-    public function register(): void
+    public function loginSubmit(): void
     {
-        $data = $_POST;
+        $data = [
+            'email'    => $this->post('email'),
+            'password' => $this->post('password')
+        ];
 
-        if ($data['password'] !== $data['confirm_password']) {
-            $this->view('auth/register', [
-                'error' => 'Passwords do not match'
+        $result = $this->userService->loginUser($data);
+
+        if (!$result['success']) {
+            $this->view('auth/login', [
+                'errors' => $result['errors'],   // ✅ FIXED
+                'old'    => $data
             ]);
             return;
         }
 
-        $this->userService->createUser($data);
+        $_SESSION['user'] = $result['user'];
+
+        $this->redirect('index.php?page=home');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REGISTER SUBMIT
+    |--------------------------------------------------------------------------
+    */
+    public function registerSubmit(): void
+    {
+        $data = [
+            'name'              => $this->post('name'),   // ✅ FIXED
+            'email'             => $this->post('email'),
+            'password'          => $this->post('password'),
+            'confirm_password'  => $this->post('confirm_password')
+        ];
+
+        $result = $this->userService->createUser($data);
+
+        if (!$result['success']) {
+            $this->view('auth/register', [
+                'errors' => $result['errors'],   // ✅ FIXED
+                'old'    => $data
+            ]);
+            return;
+        }
+
+        $this->redirect('index.php?page=login');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOGOUT
+    |--------------------------------------------------------------------------
+    */
+    public function logout(): void
+    {
+        session_unset();
+        session_destroy();
 
         header("Location: index.php?page=login");
         exit;
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | LOGIN USER
-    |--------------------------------------------------------------------------
-    */
-    public function login(): void
-    {
-        $user = $this->userService->login(
-            $_POST['email'],
-            $_POST['password']
-        );
-
-        if (!$user) {
-            $this->view('auth/login', [
-                'error' => 'Invalid email or password'
-            ]);
-            return;
-        }
-
-        session_start();
-        $_SESSION['user'] = $user;
-
-        header("Location: index.php?page=home");
-        exit;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | SHOW LOGIN PAGE (alias safety optional)
-    |--------------------------------------------------------------------------
-    */
-    public function showRegisterPage(): void
-    {
-        $this->showRegister();
-    }
-
-    public function logout(): void
-{
-    session_start();
-
-    $_SESSION = [];
-
-    session_destroy();
-
-    header("Location: index.php?page=login");
-    exit;
-}
 }

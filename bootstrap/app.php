@@ -16,6 +16,7 @@ use App\Repositories\UserRepository;
 use App\Services\CatalogService;
 use App\Services\FormatService;
 use App\Services\UserService;
+use App\Validation\Validator;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,7 +49,8 @@ $userRepo    = new UserRepository($db);
 */
 $catalogService = new CatalogService($catalogRepo);
 $formatService  = new FormatService($formatRepo);
-$userService    = new UserService($userRepo);
+$validator      = new Validator();
+$userService    = new UserService($userRepo, $validator);
 
 /*
 |--------------------------------------------------------------------------

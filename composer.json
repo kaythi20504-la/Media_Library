@@ -3,7 +3,9 @@
 
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "App\\Request\\": "Request/",
+            "App\\Validation\\": "Validation/"
         }
     },
 
