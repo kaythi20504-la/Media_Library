@@ -37,17 +37,17 @@ class AuthController extends BaseController
             'password' => $this->post('password')
         ];
 
-        $result = $this->userService->loginUser($data);
+        $result = $this->userService->login($data);
 
         if (!$result['success']) {
             $this->view('auth/login', [
-                'errors' => $result['errors'],   // ✅ FIXED
+                'errors' => $result['errors'] ?? [$result['message'] ?? 'Login failed'],   // ensure errors display
                 'old'    => $data
             ]);
             return;
         }
 
-        $_SESSION['user'] = $result['user'];
+        $_SESSION['user'] = $result['data'];
 
         $this->redirect('index.php?page=home');
     }

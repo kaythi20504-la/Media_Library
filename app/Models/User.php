@@ -1,21 +1,42 @@
 <?php
-namespace App\Model;
+
+namespace App\Models;
 
 class User
 {
-    private string $username;
-    private string $email;
-    private string $password;
+    private ?int $user_id = null;
+    private string $name = '';
+    private string $email = '';
+    private string $passwordHash = '';
+    private ?string $created_at = null;
 
-    public function __construct(string $username, string $email, string $password)
-    {
-        $this->username = $username;
-        $this->email = $email;
-        $this->password = $password;
-    }
-
-    public function getUsername(): string { return $this->username; }
+    // =========================
+    // GETTERS
+    // =========================
+    public function getId(): ?int { return $this->user_id; }
+    public function getName(): string { return $this->name; }
     public function getEmail(): string { return $this->email; }
+    public function getPasswordHash(): string { return $this->passwordHash; }
 
-    // NEVER expose password directly in real systems
+    // =========================
+    // SETTERS
+    // =========================
+    public function setId(?int $id): void { $this->user_id = $id; }
+    public function setName(string $name): void { $this->name = $name; }
+    public function setEmail(string $email): void { $this->email = $email; }
+    public function setPasswordHash(string $hash): void { $this->passwordHash = $hash; }
+    public function setCreatedAt(?string $createdAt): void { $this->created_at = $createdAt; }
+
+    // =========================
+    // OUTPUT ONLY (API / VIEW)
+    // =========================
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->user_id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'created_at' => $this->created_at,
+        ];
+    }
 }
