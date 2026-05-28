@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Services\UserService;
+use App\DTO\UserDTO;
 
 class AuthController extends BaseController
 {
@@ -32,21 +33,32 @@ class AuthController extends BaseController
     */
     public function loginSubmit(): void
     {
-        $data = [
-            'email'    => $this->post('email'),
-            'password' => $this->post('password')
-        ];
+        $dto = new UserDTO(
+            name: '',
+            email: $this->post('email'),
+            password: $this->post('password')
+        );
 
-        $result = $this->userService->login($data);
+        $result = $this->userService->login($dto);
 
-        if (!$result['success']) {
+        // =========================
+        // ERROR
+        // =========================
+        if ($result['status'] !== 'success') {
+
             $this->view('auth/login', [
-                'errors' => $result['errors'] ?? [$result['message'] ?? 'Login failed'],   // ensure errors display
-                'old'    => $data
+                'errors' => $result['data'],
+                'old' => [
+                    'email' => $dto->email
+                ]
             ]);
+
             return;
         }
 
+        // =========================
+        // SUCCESS
+        // =========================
         $_SESSION['user'] = $result['data'];
 
         $this->redirect('index.php?page=home');
@@ -59,23 +71,45 @@ class AuthController extends BaseController
     */
     public function registerSubmit(): void
     {
-        $data = [
-            'name'              => $this->post('name'),   // ✅ FIXED
-            'email'             => $this->post('email'),
-            'password'          => $this->post('password'),
-            'confirm_password'  => $this->post('confirm_password')
-        ];
+        $dto = new UserDTO(
+            name: $this->post('name'),
+            email: $this->post('email'),
+            password: $this->post('password')
+        );
 
-        $result = $this->userService->createUser($data);
-
-        if (!$result['success']) {
+        // optional confirm password check in controller
+        if ($this->post('password') !== $this->post('confirm_password')) {
             $this->view('auth/register', [
-                'errors' => $result['errors'],   // ✅ FIXED
-                'old'    => $data
+                'errors' => ['Passwords do not match'],
+                'old' => [
+                    'name' => $dto->name,
+                    'email' => $dto->email
+                ]
             ]);
             return;
         }
 
+        $result = $this->userService->createUser($dto);
+
+        // =========================
+        // ERROR
+        // =========================
+        if ($result['status'] !== 'success') {
+
+            $this->view('auth/register', [
+                'errors' => $result['data'],
+                'old' => [
+                    'name' => $dto->name,
+                    'email' => $dto->email
+                ]
+            ]);
+
+            return;
+        }
+
+        // =========================
+        // SUCCESS
+        // =========================
         $this->redirect('index.php?page=login');
     }
 
@@ -89,7 +123,6 @@ class AuthController extends BaseController
         session_unset();
         session_destroy();
 
-        header("Location: index.php?page=login");
-        exit;
+        $this->redirect('index.php?page=login');
     }
 }
