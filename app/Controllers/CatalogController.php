@@ -21,6 +21,8 @@ class CatalogController extends BaseController
      */
     public function home(): void
     {
+            $this->requireLogin();
+
         $data = $this->catalogService
             ->getHomePageData();
 
