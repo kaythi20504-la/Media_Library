@@ -3,152 +3,115 @@
 namespace App\Services;
 
 use App\Repositories\UserRepository;
+use App\Validation\Validator;
+use App\Request\RegisterUserRequest;
+use App\Request\LoginRequest;
 use App\DTO\UserDTO;
-use App\Core\ApiResponse;
+use App\Mapper\UserMapper;
+use App\Models\User;
 
 class UserService
 {
-    private UserRepository $repo;
+    public function __construct(
+        private UserRepository $repo,
+        private Validator $validator
+    ) {}
 
-    public function __construct(UserRepository $repo)
+    /* =========================
+        REGISTER
+    ========================= */
+    public function register(UserDTO $dto): array
     {
-        $this->repo = $repo;
+        $data = [
+            'username' => $dto->name,
+            'email' => $dto->email,
+            'password' => $dto->password,
+            'confirm_password' => $dto->confirmPassword
+        ];
+
+        $errors = $this->validator->validate(
+                    $data,
+                    RegisterUserRequest::rules()
+                );
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors' => $errors
+            ];
+        }
+
+        if ($this->repo->findByEmail($dto->email)) {
+            return [
+                'success' => false,
+                'errors' => [
+                    'email' => 'Email already exists'
+                ]
+            ];
+        }
+
+        // ⭐ MAPPER USED HERE
+        $user = UserMapper::toModel($dto);
+
+        // password hashing stays in service
+        $user->setPasswordHash(
+            password_hash($dto->password, PASSWORD_DEFAULT)
+        );
+
+        $saved = $this->repo->insertUser($user);
+
+        return [
+            'success' => $saved
+        ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | REGISTER USER
-    |--------------------------------------------------------------------------
-    */
-    public function createUser(UserDTO $dto): array
+    /* =========================
+        LOGIN
+    ========================= */
+    public function login(UserDTO $dto): array
     {
-        $errors = [];
+        $data = [
+            'email' => $dto->email,
+            'password' => $dto->password
+        ];
 
-        // =========================
-        // VALIDATION
-        // =========================
-        if (empty($dto->name)) {
-            $errors[] = 'Name is required';
-        }
-
-        if (empty($dto->email)) {
-            $errors[] = 'Email is required';
-        }
-
-        if (empty($dto->password)) {
-            $errors[] = 'Password is required';
-        }
-
-        // check email exists
-        if ($this->repo->findByEmail($dto->email)) {
-            $errors[] = 'Email already exists';
-        }
+        $errors = $this->validator->validate($data, LoginRequest::rules());
 
         if (!empty($errors)) {
-            return ApiResponse::error(
-                'Validation failed',
-                $errors
-            );
-        }
-
-        // =========================
-        // SAVE TO DATABASE
-        // =========================
-        $created = $this->repo->create([
-            'name' => $dto->name,
-            'email' => $dto->email,
-            'password' => password_hash(
-                $dto->password,
-                PASSWORD_BCRYPT
-            )
-        ]);
-
-        if (!$created) {
-            return ApiResponse::error(
-                'User registration failed'
-            );
-        }
-
-        return ApiResponse::success(
-            null,
-            'User registered successfully'
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | LOGIN USER
-    |--------------------------------------------------------------------------
-    */
-    public function login(UserDTO $dto): array
-{
-    // =========================
-    // VALIDATION
-    // =========================
-    if (empty($dto->email)) {
-        return ApiResponse::error(
-            'Validation failed',
-            ['Email is required']
-        );
-    }
-
-    if (empty($dto->password)) {
-        return ApiResponse::error(
-            'Validation failed',
-            ['Password is required']
-        );
-    }
-
-    // =========================
-    // FIND USER (MODEL OBJECT)
-    // =========================
-    $user = $this->repo->findByEmail($dto->email);
-
-    if (
-        !$user ||
-        !password_verify(
-            $dto->password,
-            $user->getPasswordHash()
-        )
-    ) {
-        return ApiResponse::error(
-            'Invalid email or password'
-        );
-    }
-
-    // =========================
-    // SUCCESS RESPONSE
-    // =========================
-    return ApiResponse::success(
-        [
-            'id' => $user->getId(),
-            'name' => $user->getName(),
-            'email' => $user->getEmail()
-        ],
-        'Login successful'
-    );
-}
-
-    /*
-    |--------------------------------------------------------------------------
-    | GET ALL USERS
-    |--------------------------------------------------------------------------
-    */
-    public function getAllUsers(): array
-    {
-        $rows = $this->repo->getAll();
-
-        $users = array_map(function ($row) {
             return [
-                'id' => $row['id'],
-                'name' => $row['name'],
-                'email' => $row['email']
+                'success' => false,
+                'errors' => $errors
             ];
-        }, $rows);
+        }
 
-        return ApiResponse::success(
-            $users,
-            'Users fetched successfully'
-        );
+        $user = $this->repo->findByEmail($dto->email);
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'errors' => [
+                    'email' => 'User not found'
+                ]
+            ];
+        }
+
+        if (!password_verify($dto->password, $user->getPasswordHash())) {
+            return [
+                'success' => false,
+                'errors' => [
+                    'password' => 'Invalid password'
+                ]
+            ];
+        }
+
+        return [
+            'success' => true,
+            'user' => $user->toArray()
+        ];
+    }
+
+    public function logout(): void
+    {
+        session_unset();
+        session_destroy();
     }
 }
