@@ -1,13 +1,14 @@
 {
     "name": "hsumyatnoe/medialibrary",
 
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/",
-            "App\\Request\\": "Request/",
-            "App\\Validation\\": "Validation/"
-        }
-    },
+   "autoload": {
+    "psr-4": {
+        "App\\": "app/",
+        "App\\Request\\": "Request/",
+        "App\\Validation\\": "Validation/",
+        "App\\Mapper\\": "app/Mapper/"
+    }
+},
 
     "require": {
         "phpmailer/phpmailer": "^7.0",

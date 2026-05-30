@@ -23,7 +23,7 @@ class UserService
     public function register(UserDTO $dto): array
     {
         $data = [
-            'username' => $dto->name,
+            'name' => $dto->name,
             'email' => $dto->email,
             'password' => $dto->password,
             'confirm_password' => $dto->confirmPassword
@@ -50,11 +50,15 @@ class UserService
         }
 
         // ⭐ MAPPER USED HERE
-        $user = UserMapper::toModel($dto);
+        // $user = UserMapper::toModel($dto);
+        $user = new User();
+        $user->setName($dto->name);
+        $user->setEmail($dto->email);
 
         // password hashing stays in service
         $user->setPasswordHash(
             password_hash($dto->password, PASSWORD_DEFAULT)
+            
         );
 
         $saved = $this->repo->insertUser($user);

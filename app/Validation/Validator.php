@@ -20,6 +20,7 @@ class Validator
             }
 
             if ($this->isEmpty($value)) {
+                
                 continue;
             }
 

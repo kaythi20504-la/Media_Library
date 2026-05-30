@@ -7,7 +7,7 @@ class RegisterUserRequest
     public static function rules(): array
     {
         return [
-            'username' => [
+            'name' => [
                 'required' => true,
                 'min' => 3,
                 'max' => 50,
