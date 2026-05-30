@@ -20,6 +20,16 @@ define('BASE_URL', 'http://localhost:8080/MediaLibrary-MVC-');
 */
 require_once BASE_PATH . '/vendor/autoload.php';
 session_start(); // ✅ MUST BE HERE
+
+/*
+|--------------------------------------------------------------------------
+| ERROR HANDLING (IMPORTANT - MUST BE FIRST)
+|--------------------------------------------------------------------------
+*/
+use App\Error\ErrorHandler;
+
+ErrorHandler::register();
+
 /*
 |--------------------------------------------------------------------------
 | ENV

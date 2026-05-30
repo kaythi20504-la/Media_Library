@@ -3,77 +3,56 @@
 namespace App\Controllers;
 
 use App\Services\CatalogService;
+use App\Exceptions\NotFoundException;
 
 class CatalogController extends BaseController
 {
-    private CatalogService $catalogService;
-
     public function __construct(
-        CatalogService $catalogService
-    ) {
+        private CatalogService $catalogService
+    ) {}
 
-        $this->catalogService =
-            $catalogService;
-    }
-
-    /**
+    /*
      * Home Page
      */
     public function home(): void
     {
-            $this->requireLogin();
+         $this->requireLogin();
 
-        $data = $this->catalogService
-            ->getHomePageData();
+        $data = $this->catalogService->getHomePageData();
 
-        // Current logged in user
         $data['user'] = $this->user();
 
-        $this->view(
-            'home',
-            $data
-        );
+        $this->view('home', $data);
     }
 
-    /**
+    /*
      * Catalog Page
      */
     public function index(): void
-{
-    $this->requireLogin();
+    {
+         $this->requireLogin();
 
-    $data = $this->catalogService->getCatalogPage($_GET);
+        $data = $this->catalogService->getCatalogPage($_GET);
 
-    $data['user'] = $this->user();
+        $data['user'] = $this->user();
 
-    $this->view('catalog', $data);
-}
+        $this->view('catalog', $data);
+    }
 
     /**
      * Details Page
      */
-    public function show(
-        int $id
-    ): void {
-
-        $item = $this->catalogService
-            ->getById($id);
+    public function show(int $id): void
+    {
+        $item = $this->catalogService->getById($id);
 
         if ($item === null) {
-
-            http_response_code(404);
-
-            echo 'Item not found';
-
-            return;
+            throw new NotFoundException("Item not found (ID: $id)");
         }
 
-        $this->view(
-            'details',
-            [
-                'item' => $item,
-                'user' => $this->user()
-            ]
-        );
+        $this->view('details', [
+            'item' => $item,
+            'user' => $this->user()
+        ]);
     }
 }

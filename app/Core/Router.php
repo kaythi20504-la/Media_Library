@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+use App\Exceptions\NotFoundException;
+
 class Router
 {
     private array $routes = [];
@@ -22,36 +24,34 @@ class Router
         $this->routes['POST'][$route] = $action;
     }
 
- public function dispatch(string $route): void
-{
-    $method = $_SERVER['REQUEST_METHOD'];
+    public function dispatch(string $route): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'];
 
-    foreach ($this->routes[$method] ?? [] as $registeredRoute => $action) {
+        foreach ($this->routes[$method] ?? [] as $registeredRoute => $action) {
 
-        $pattern = preg_replace('#\{[a-zA-Z_]+\}#', '([0-9]+)', $registeredRoute);
+            $pattern = preg_replace('#\{[a-zA-Z_]+\}#', '([0-9]+)', $registeredRoute);
 
-        if (preg_match('#^' . $pattern . '$#', $route, $matches)) {
+            if (preg_match('#^' . $pattern . '$#', $route, $matches)) {
 
-            [$controllerClass, $methodName] = $action;
+                [$controllerClass, $methodName] = $action;
 
-            if (!isset($this->services[$controllerClass])) {
-                throw new \Exception("No service registered for $controllerClass");
+                if (!isset($this->services[$controllerClass])) {
+                    throw new \Exception("No service registered for $controllerClass");
+                }
+
+                $service = $this->services[$controllerClass];
+
+                $controller = new $controllerClass($service);
+
+                array_shift($matches);
+
+                $controller->$methodName(...$matches);
+
+                return;
             }
-
-            $service = $this->services[$controllerClass];
-
-            $controller = new $controllerClass($service);
-
-            array_shift($matches); // remove full match
-
-            $controller->$methodName(...$matches);
-
-            return;
         }
-    }
 
-    http_response_code(404);
-    echo "Route not found";
-    exit;
-}
+        throw new NotFoundException("Route not found: " . $route);
+    }
 }

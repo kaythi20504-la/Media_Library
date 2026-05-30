@@ -2,13 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
     <title><?= htmlspecialchars($pageTitle ?? 'Media Library') ?></title>
-
-    <!-- FIXED CSS PATH -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>/Public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css">
 </head>
-
 <body>
 
 <div class="page-container">
@@ -17,61 +13,49 @@
 <header class="header">
     <div class="wrapper">
 
-        <!-- LOGO -->
         <h1 class="logo">
             <a href="<?= BASE_URL ?>/Public/index.php?page=home">
-
-                <!-- FIXED IMAGE PATH -->
-                <img src="<?= BASE_URL ?>/Public/img/Brand-title.png" alt="Media Library">
-
+                <img src="<?= BASE_URL ?>/img/Brand-title.png" alt="Media Library">
             </a>
         </h1>
 
-        <!-- NAVIGATION -->
         <ul class="nav">
 
-            <li class="<?= ($section === 'books') ? 'on' : '' ?>">
+            <li class="<?= (isset($section) && $section === 'books') ? 'on' : '' ?>">
                 <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=books">
-
-                    <img src="<?= BASE_URL ?>/Public/img/book.png">
+                    <img src="<?= BASE_URL ?>/img/book.png">
                     Books
-
                 </a>
             </li>
 
-            <li class="<?= ($section === 'movies') ? 'on' : '' ?>">
+            <li class="<?= (isset($section) && $section === 'movies') ? 'on' : '' ?>">
                 <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=movies">
-
-                    <img src="<?= BASE_URL ?>/Public/img/movie.png">
+                    <img src="<?= BASE_URL ?>/img/movie.png">
                     Movies
-
                 </a>
             </li>
 
-            <li class="<?= ($section === 'music') ? 'on' : '' ?>">
+            <li class="<?= (isset($section) && $section === 'music') ? 'on' : '' ?>">
                 <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=music">
-
-                    <img src="<?= BASE_URL ?>/Public/img/music.png">
+                    <img src="<?= BASE_URL ?>/img/music.png">
                     Music
-
                 </a>
             </li>
 
-            <li class="<?= ($section === 'suggest') ? 'on' : '' ?>">
+            <li class="<?= (isset($section) && $section === 'suggest') ? 'on' : '' ?>">
                 <a href="<?= BASE_URL ?>/Public/index.php?page=suggest">
-
-                    <img src="<?= BASE_URL ?>/Public/img/suggestion.png">
+                    <img src="<?= BASE_URL ?>/img/suggestion.png">
                     Suggest
-
                 </a>
             </li>
 
-            <!-- AUTH SECTION -->
-            <?php if (!empty($_SESSION['user'])): ?>
+            <?php if (!empty($_SESSION['user_id'])): ?>
+
+                <?php $userName = $_SESSION['username'] ?? 'User'; ?>
 
                 <li>
-                    <span style="color:#fff;">
-                        👤 <?= htmlspecialchars($_SESSION['user']['name']) ?>
+                    <span style="color:#fff; font-weight: 500; padding: 0 10px;">
+                        👤 <?= htmlspecialchars($userName) ?>
                     </span>
                 </li>
 
@@ -85,7 +69,7 @@
 
                 <li>
                     <a href="<?= BASE_URL ?>/Public/index.php?page=login">
-                         Login
+                        Login
                     </a>
                 </li>
 
@@ -102,7 +86,6 @@
     </div>
 </header>
 
-<!-- SEARCH BAR -->
 <?php if (empty($hideSearch)): ?>
 
 <div class="search">

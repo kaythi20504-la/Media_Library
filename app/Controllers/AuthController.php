@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Services\UserService;
 use App\DTO\UserDTO;
+use App\Exceptions\ValidationException;
 
 class AuthController extends BaseController
 {
@@ -15,22 +16,26 @@ class AuthController extends BaseController
     {
         $this->view('auth/login', [
             'errors' => $_SESSION['errors'] ?? [],
-            'success' => $_SESSION['success'] ?? ''
+            'success' => $_SESSION['success'] ?? '',
+            'old' => $_SESSION['old'] ?? []
         ]);
 
-        unset($_SESSION['errors'], $_SESSION['success']);
+        unset($_SESSION['errors'], $_SESSION['success'], $_SESSION['old']);
     }
 
     public function showRegister(): void
     {
         $this->view('auth/register', [
-            'errors' => $_SESSION['errors'] ?? []
+            'errors' => $_SESSION['errors'] ?? [],
+            'old' => $_SESSION['old'] ?? []
         ]);
 
-        unset($_SESSION['errors']);
+        unset($_SESSION['errors'], $_SESSION['old']);
     }
 
-    /* LOGIN */
+    /* =========================
+       LOGIN
+    ========================= */
     public function loginSubmit(): void
     {
         $dto = new UserDTO(
@@ -38,54 +43,39 @@ class AuthController extends BaseController
             password: $_POST['password'] ?? ''
         );
 
-        $result = $this->userService->login($dto);
+        $user = $this->userService->login($dto);
 
-        if (!$result['success']) {
-            $this->view('auth/login', [
-                'errors' => $result['errors'],
-                'old' => $_POST
-            ]);
-            return;
-        }
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['name'];
 
-        $_SESSION['user_id'] = $result['user']['id'];
-        $_SESSION['username'] = $result['user']['name'];
-
-        header('Location: index.php?page=home');
-        exit;
+        $this->redirect(BASE_URL . '/Public/index.php?page=home');
     }
 
-    /* REGISTER */
+    /* =========================
+       REGISTER
+    ========================= */
     public function registerSubmit(): void
     {
+        
         $dto = new UserDTO(
-            name: $_POST['username'] ?? '',
+            name: $_POST['name'] ?? '',
             email: $_POST['email'] ?? '',
             password: $_POST['password'] ?? '',
             confirmPassword: $_POST['confirm_password'] ?? ''
         );
 
-        $result = $this->userService->register($dto);
+        $this->userService->register($dto);
 
-        if (!$result['success']) {
-            $this->view('auth/register', [
-                'errors' => $result['errors'],
-                'old' => $_POST
-            ]);
-            return;
-        }
+        $_SESSION['success'] = "Registration successful! Please sign in.";
 
-        $_SESSION['success'] = "Registration successful";
-
-        header('Location: index.php?page=login');
-        exit;
+        $this->redirect(BASE_URL . '/Public/index.php?page=login');
     }
 
     public function logout(): void
     {
         $this->userService->logout();
-
-        header('Location: index.php?page=login');
-        exit;
+        $this->redirect(BASE_URL . '/Public/index.php?page=login');
     }
+
+    
 }
