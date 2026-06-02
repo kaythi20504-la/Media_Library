@@ -19,8 +19,7 @@ $old = $old ?? [];
             </div>
         <?php endif; ?>
 
-        <form method="post"
-              action="<?= BASE_URL ?>/Public/index.php?page=login-submit">
+        <form method="post" action="?page=login-submit">
 
             <!-- EMAIL -->
             <div class="form-group">

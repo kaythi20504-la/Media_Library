@@ -11,7 +11,7 @@ ini_set('display_errors', 1);
 |--------------------------------------------------------------------------
 */
 define('BASE_PATH', dirname(__DIR__));
-define('BASE_URL', 'http://localhost:8080/MediaLibrary-MVC-');
+define('BASE_URL', 'http://localhost:8080/MediaLibrary-MVC- -DDD');
 
 /*
 |--------------------------------------------------------------------------
@@ -19,11 +19,12 @@ define('BASE_URL', 'http://localhost:8080/MediaLibrary-MVC-');
 |--------------------------------------------------------------------------
 */
 require_once BASE_PATH . '/vendor/autoload.php';
-session_start(); // ✅ MUST BE HERE
+
+session_start();
 
 /*
 |--------------------------------------------------------------------------
-| ERROR HANDLING (IMPORTANT - MUST BE FIRST)
+| ERROR HANDLING
 |--------------------------------------------------------------------------
 */
 use App\Error\ErrorHandler;
@@ -42,29 +43,51 @@ if (file_exists(BASE_PATH . '/.env')) {
 
 /*
 |--------------------------------------------------------------------------
-| USE CLASSES
+| CORE
 |--------------------------------------------------------------------------
 */
 use App\Core\Database;
 use App\Core\Router;
 
+/*
+|--------------------------------------------------------------------------
+| CONTROLLERS
+|--------------------------------------------------------------------------
+*/
 use App\Controllers\CatalogController;
 use App\Controllers\DetailsController;
 use App\Controllers\AuthController;
 use App\Controllers\SuggestController;
-
-use App\Repositories\CatalogRepository;
-use App\Repositories\FormatRepository;
-use App\Repositories\UserRepository;
-
-use App\Services\CatalogService;
-use App\Services\FormatService;
-use App\Services\UserService;
-use App\Validation\Validator;
 use App\Controllers\Api\ApiUserController;
+
 /*
 |--------------------------------------------------------------------------
-| DB CONNECTION
+| REPOSITORIES
+|--------------------------------------------------------------------------
+*/
+use App\Infrastructure\Persistence\UserRepository;
+use App\Repositories\CatalogRepository;
+use App\Repositories\FormatRepository;
+
+/*
+|--------------------------------------------------------------------------
+| USE CASES
+|--------------------------------------------------------------------------
+*/
+use App\Application\User\UseCases\RegisterUserUseCase;
+use App\Application\User\UseCases\LoginUserUseCase;
+
+/*
+|--------------------------------------------------------------------------
+| SERVICES
+|--------------------------------------------------------------------------
+*/
+use App\Services\CatalogService;
+use App\Services\FormatService;
+
+/*
+|--------------------------------------------------------------------------
+| DATABASE
 |--------------------------------------------------------------------------
 */
 $db = Database::connection();
@@ -85,8 +108,19 @@ $userRepo    = new UserRepository($db);
 */
 $catalogService = new CatalogService($catalogRepo);
 $formatService  = new FormatService($formatRepo);
-$validator = new Validator();
-$userService    = new UserService($userRepo, $validator);
+
+/*
+|--------------------------------------------------------------------------
+| USER USE CASES
+|--------------------------------------------------------------------------
+*/
+$registerUserUseCase = new RegisterUserUseCase(
+    $userRepo
+);
+
+$loginUserUseCase = new LoginUserUseCase(
+    $userRepo
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -97,14 +131,32 @@ $router = new Router();
 
 /*
 |--------------------------------------------------------------------------
-| REGISTER SERVICES (IMPORTANT)
+| REGISTER CONTROLLER DEPENDENCIES
 |--------------------------------------------------------------------------
 */
-$router->registerService(CatalogController::class, $catalogService);
-$router->registerService(DetailsController::class, $catalogService);
-$router->registerService(SuggestController::class, $formatService);
-$router->registerService(AuthController::class, $userService);
-$router->registerService(ApiUserController::class, $userService);
+$router->registerService(
+    CatalogController::class,
+    $catalogService
+);
+
+$router->registerService(
+    DetailsController::class,
+    $catalogService
+);
+
+$router->registerService(
+    SuggestController::class,
+    $formatService
+);
+
+$router->registerService(
+    AuthController::class,
+    [
+        $registerUserUseCase,
+        $loginUserUseCase
+    ]
+);
+
 /*
 |--------------------------------------------------------------------------
 | ROUTES
@@ -119,4 +171,5 @@ require BASE_PATH . '/routes/api.php';
 |--------------------------------------------------------------------------
 */
 $page = $_GET['page'] ?? 'home';
+
 $router->dispatch($page);

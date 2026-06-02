@@ -11,11 +11,13 @@ use App\Controllers\SuggestController;
 
 use App\Repositories\CatalogRepository;
 use App\Repositories\FormatRepository;
-use App\Repositories\UserRepository;
+// use App\Repositories\UserRepository;
+use app\Infrastructure\Persistence\UserRepository;
 
 use App\Services\CatalogService;
 use App\Services\FormatService;
-use App\Services\UserService;
+// use App\Services\UserService;
+use app\Application\User\Services\UserService;
 use App\Validation\Validator;
 
 /*

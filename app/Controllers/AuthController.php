@@ -2,30 +2,35 @@
 
 namespace App\Controllers;
 
-use App\Services\UserService;
-use App\DTO\UserDTO;
+use App\Application\User\DTOs\UserDTO;
+use App\Application\User\DTOs\RegisterUserDTO;
+
+use App\Application\User\UseCases\RegisterUserUseCase;
+use App\Application\User\UseCases\LoginUserUseCase;
 
 class AuthController extends BaseController
 {
     public function __construct(
-        private UserService $userService
+        private RegisterUserUseCase $registerUserUseCase,
+        private LoginUserUseCase $loginUserUseCase
     ) {}
 
+    /* =========================
+       SHOW LOGIN PAGE
+    ========================= */
     public function showLogin(): void
     {
         $this->view('auth/login', [
             'errors' => $_SESSION['errors'] ?? [],
-            'success' => $_SESSION['success'] ?? '',
             'old' => $_SESSION['old'] ?? []
         ]);
 
-        unset(
-            $_SESSION['errors'],
-            $_SESSION['success'],
-            $_SESSION['old']
-        );
+        unset($_SESSION['errors'], $_SESSION['old']);
     }
 
+    /* =========================
+       SHOW REGISTER PAGE
+    ========================= */
     public function showRegister(): void
     {
         $this->view('auth/register', [
@@ -33,10 +38,7 @@ class AuthController extends BaseController
             'old' => $_SESSION['old'] ?? []
         ]);
 
-        unset(
-            $_SESSION['errors'],
-            $_SESSION['old']
-        );
+        unset($_SESSION['errors'], $_SESSION['old']);
     }
 
     /* =========================
@@ -45,11 +47,13 @@ class AuthController extends BaseController
     public function loginSubmit(): void
     {
         $dto = new UserDTO(
+            name: '',
             email: $_POST['email'] ?? '',
-            password: $_POST['password'] ?? ''
+            password: $_POST['password'] ?? '',
+            confirmPassword: ''
         );
 
-        $result = $this->userService->login($dto);
+        $result = $this->loginUserUseCase->execute($dto);
 
         if (!$result['success']) {
 
@@ -59,37 +63,29 @@ class AuthController extends BaseController
                 'email' => $_POST['email'] ?? ''
             ];
 
-            $this->redirect(
-                BASE_URL . '/Public/index.php?page=login'
-            );
-
+            $this->redirect(BASE_URL . '/Public/index.php?page=login');
             return;
         }
 
-        $_SESSION['user_id'] =
-            $result['user']['id'];
+        $_SESSION['user_id'] = $result['user']['id'] ?? null;
+        $_SESSION['username'] = $result['user']['name'] ?? null;
 
-        $_SESSION['username'] =
-            $result['user']['name'];
-
-        $this->redirect(
-            BASE_URL . '/Public/index.php?page=home'
-        );
+        $this->redirect(BASE_URL . '/Public/index.php?page=home');
     }
-
+    
     /* =========================
        REGISTER
     ========================= */
     public function registerSubmit(): void
     {
-        $dto = new UserDTO(
+        $dto = new RegisterUserDTO(
             name: $_POST['name'] ?? '',
             email: $_POST['email'] ?? '',
             password: $_POST['password'] ?? '',
             confirmPassword: $_POST['confirm_password'] ?? ''
         );
 
-        $result = $this->userService->register($dto);
+        $result = $this->registerUserUseCase->execute($dto);
 
         if (!$result['success']) {
 
@@ -100,27 +96,26 @@ class AuthController extends BaseController
                 'email' => $_POST['email'] ?? ''
             ];
 
-            $this->redirect(
-                BASE_URL . '/Public/index.php?page=register'
-            );
-
+            $this->redirect(BASE_URL . '/Public/index.php?page=register');
             return;
         }
 
-        $_SESSION['success'] =
-            'Registration successful! Please sign in.';
+        $_SESSION['success'] = 'Registration successful! Please sign in.';
 
-        $this->redirect(
-            BASE_URL . '/Public/index.php?page=login'
-        );
+        $this->redirect(BASE_URL . '/Public/index.php?page=login');
     }
 
+    /* =========================
+       LOGOUT
+    ========================= */
     public function logout(): void
     {
-        $this->userService->logout();
+        $_SESSION = [];
 
-        $this->redirect(
-            BASE_URL . '/Public/index.php?page=login'
-        );
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
+
+        $this->redirect(BASE_URL . '/Public/index.php?page=login');
     }
 }

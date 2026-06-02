@@ -7,51 +7,85 @@ use App\Exceptions\NotFoundException;
 class Router
 {
     private array $routes = [];
+
     private array $services = [];
 
-    public function registerService(string $controller, object $service): void
-    {
+    public function registerService(
+        string $controller,
+        mixed $service
+    ): void {
         $this->services[$controller] = $service;
     }
 
-    public function get(string $route, array $action): void
-    {
+    public function get(
+        string $route,
+        array $action
+    ): void {
         $this->routes['GET'][$route] = $action;
     }
 
-    public function post(string $route, array $action): void
-    {
+    public function post(
+        string $route,
+        array $action
+    ): void {
         $this->routes['POST'][$route] = $action;
     }
 
-    public function dispatch(string $route): void
-    {
+    public function dispatch(
+        string $route
+    ): void {
+
         $method = $_SERVER['REQUEST_METHOD'];
 
         foreach ($this->routes[$method] ?? [] as $registeredRoute => $action) {
 
-            $pattern = preg_replace('#\{[a-zA-Z_]+\}#', '([0-9]+)', $registeredRoute);
+            $pattern = preg_replace(
+                '#\{[a-zA-Z_]+\}#',
+                '([0-9]+)',
+                $registeredRoute
+            );
 
-            if (preg_match('#^' . $pattern . '$#', $route, $matches)) {
+            if (
+                preg_match(
+                    '#^' . $pattern . '$#',
+                    $route,
+                    $matches
+                )
+            ) {
 
                 [$controllerClass, $methodName] = $action;
 
                 if (!isset($this->services[$controllerClass])) {
-                    throw new \Exception("No service registered for $controllerClass");
+                    throw new \Exception(
+                        "No service registered for {$controllerClass}"
+                    );
                 }
 
-                $service = $this->services[$controllerClass];
+                $dependencies =
+                    $this->services[$controllerClass];
 
-                $controller = new $controllerClass($service);
+                if (!is_array($dependencies)) {
+                    $dependencies = [$dependencies];
+                }
+
+                $controller =
+                    new $controllerClass(
+                        ...$dependencies
+                    );
 
                 array_shift($matches);
 
-                $controller->$methodName(...$matches);
+                call_user_func_array(
+                    [$controller, $methodName],
+                    $matches
+                );
 
                 return;
             }
         }
 
-        throw new NotFoundException("Route not found: " . $route);
+        throw new NotFoundException(
+            "Route not found: {$route}"
+        );
     }
 }

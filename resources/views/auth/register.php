@@ -12,8 +12,7 @@ $old = $old ?? [];
         <h1>Create Account ✨</h1>
         <p class="subtitle">Join your Media Library today</p>
 
-        <form method="post"
-              action="<?= BASE_URL ?>/Public/index.php?page=register-submit">
+        <form method="post" action="?page=register-submit">
 
             <!-- NAME -->
             <div class="form-group">
