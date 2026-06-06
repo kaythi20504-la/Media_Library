@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Persistence;
+namespace App\Infrastructure\Persistence\User;
 
 use PDO;
 use App\Domain\User\Entities\User;
@@ -33,9 +33,7 @@ final class UserRepository implements UserRepositoryInterface
             SELECT * FROM users WHERE email = :email LIMIT 1
         ");
 
-        $stmt->execute([
-            'email' => $email
-        ]);
+        $stmt->execute(['email' => $email]);
 
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 

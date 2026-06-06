@@ -1,14 +1,21 @@
 <?php
 
-namespace App\Controllers;
+declare(strict_types=1);
 
-use App\Services\CatalogService;
+namespace App\Presentation\Controllers;
+
+use App\Presentation\Controllers\BaseController;
+use App\Application\Catalog\UseCases\GetHomePageUseCase;
+use App\Application\Catalog\UseCases\GetCatalogPageUseCase;
+use App\Application\Catalog\UseCases\GetCatalogItemUseCase;
 use App\Exceptions\NotFoundException;
 
 class CatalogController extends BaseController
 {
     public function __construct(
-        private CatalogService $catalogService
+        private GetHomePageUseCase $homeUseCase,
+        private GetCatalogPageUseCase $catalogUseCase,
+        private GetCatalogItemUseCase $itemUseCase
     ) {}
 
     /*
@@ -16,9 +23,9 @@ class CatalogController extends BaseController
      */
     public function home(): void
     {
-         $this->requireLogin();
+        $this->requireLogin();
 
-        $data = $this->catalogService->getHomePageData();
+        $data = $this->homeUseCase->execute();
 
         $data['user'] = $this->user();
 
@@ -30,9 +37,9 @@ class CatalogController extends BaseController
      */
     public function index(): void
     {
-         $this->requireLogin();
+        $this->requireLogin();
 
-        $data = $this->catalogService->getCatalogPage($_GET);
+        $data = $this->catalogUseCase->execute($_GET);
 
         $data['user'] = $this->user();
 
@@ -44,7 +51,7 @@ class CatalogController extends BaseController
      */
     public function show(int $id): void
     {
-        $item = $this->catalogService->getById($id);
+        $item = $this->itemUseCase->execute($id);
 
         if ($item === null) {
             throw new NotFoundException("Item not found (ID: $id)");

@@ -1,13 +1,17 @@
 <?php
 
-namespace App\Repositories;
+declare(strict_types=1);
 
-use App\Interfaces\CatalogRepositoryInterface;
+namespace App\Infrastructure\Persistence\Catalog;
 
-class CatalogRepository extends BaseRepository implements CatalogRepositoryInterface
+use PDO;
+use App\Domain\Catalog\Repositories\CatalogRepositoryInterface;
+
+class CatalogRepository implements CatalogRepositoryInterface
 {
-    protected string $table = 'view_catalog';
-    protected string $primaryKey = 'media_id';
+    public function __construct(
+        private PDO $pdo
+    ) {}
 
     // =========================
     // GET ALL
@@ -16,17 +20,19 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
     {
         $sql = "
             SELECT media_id, title, category, img
-            FROM {$this->table}
+            FROM view_catalog
             ORDER BY REPLACE(REPLACE(REPLACE(title, 'The ', ''), 'An ', ''), 'A ', '')
         ";
 
-        $sql .= $this->buildLimitOffset($limit, $offset);
+        if ($limit !== null) {
+            $sql .= " LIMIT {$limit} OFFSET {$offset}";
+        }
 
         return $this->fetchAll($sql);
     }
 
     // =========================
-    // COUNT FILTERED
+    // COUNT
     // =========================
     public function count(array $filters = []): int
     {
@@ -39,7 +45,6 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
         $params = [];
 
         if (!empty($filters['search'])) {
-
             $sql .= "
                 AND (
                     vc.title LIKE :search
@@ -57,12 +62,14 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
         }
 
         if (!empty($filters['category'])) {
-
             $sql .= " AND LOWER(vc.category) = LOWER(:category)";
             $params['category'] = $filters['category'];
         }
 
-        $row = $this->fetchOne($sql, $params);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return (int) ($row['total'] ?? 0);
     }
@@ -86,7 +93,6 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
         $params = [];
 
         if ($search) {
-
             $sql .= "
                 AND (
                     vc.title LIKE :search
@@ -112,9 +118,14 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
             ORDER BY REPLACE(REPLACE(REPLACE(vc.title, 'The ', ''), 'An ', ''), 'A ', '')
         ";
 
-        $sql .= $this->buildLimitOffset($limit, $offset);
+        if ($limit !== null) {
+            $sql .= " LIMIT {$limit} OFFSET {$offset}";
+        }
 
-        return $this->fetchAll($sql, $params);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // =========================
@@ -130,7 +141,8 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
     // =========================
     public function getRandom(): array
     {
-        return $this->fetchAll("SELECT * FROM view_random");
+        $stmt = $this->pdo->query("SELECT * FROM view_random");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // =========================
@@ -138,12 +150,15 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
     // =========================
     public function getById(int $id): ?array
     {
-        $rows = $this->fetchAll("
+        $stmt = $this->pdo->prepare("
             SELECT media_id, title, category, img, format, year,
                    genre, publisher, isbn, fullname, role
             FROM view_item_detail
             WHERE media_id = :id
-        ", ['id' => $id]);
+        ");
+
+        $stmt->execute(['id' => $id]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (!$rows) {
             return null;
@@ -168,5 +183,15 @@ class CatalogRepository extends BaseRepository implements CatalogRepositoryInter
         }
 
         return $item;
+    }
+
+    // =========================
+    // HELPER
+    // =========================
+    private function fetchAll(string $sql, array $params = []): array
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

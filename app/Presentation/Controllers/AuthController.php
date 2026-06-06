@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Presentation\Controllers;
 
 use App\Application\User\DTOs\UserDTO;
 use App\Application\User\DTOs\RegisterUserDTO;

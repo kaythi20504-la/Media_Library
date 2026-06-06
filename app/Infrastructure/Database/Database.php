@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core;
+namespace App\Infrastructure\Database;
 
 use PDO;
 use PDOException;
@@ -30,14 +30,11 @@ final class Database
                 [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_TIMEOUT            => 5, // 🔥 IMPORTANT (prevents infinite hang)
+                    PDO::ATTR_TIMEOUT            => 5,
                 ]
             );
 
-            // echo "DB CONNECTED SUCCESSFULLY<br>";
-
         } catch (PDOException $e) {
-
             die("DB CONNECTION FAILED: " . $e->getMessage());
         }
 

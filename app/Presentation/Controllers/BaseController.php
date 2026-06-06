@@ -1,9 +1,6 @@
 <?php
 
-namespace App\Controllers;
-
-use App\Exceptions\ValidationException;
-use App\Exceptions\NotFoundException;
+namespace App\Presentation\Controllers;
 
 abstract class BaseController
 {
@@ -37,17 +34,14 @@ abstract class BaseController
         return $_POST[$key] ?? $default;
     }
 
-    /* =========================
-       AUTH GUARDS (CLEAN VERSION)
-    ========================= */
-
     protected function requireLogin(): void
-{
-    if (!isset($_SESSION['user_id'])) {
-        header('Location: ' . BASE_URL . '/Public/index.php?page=login');
-        exit;
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '/Public/index.php?page=login');
+            exit;
+        }
     }
-}
+
     protected function guestOnly(): void
     {
         if (isset($_SESSION['user_id'])) {
@@ -69,13 +63,4 @@ abstract class BaseController
     {
         return isset($_SESSION['user_id']);
     }
-
-    /* =========================
-       ERROR HELPERS (OPTIONAL)
-    ========================= */
-
-    // protected function throwValidation(array $errors): void
-    // {
-    //     throw new ValidationException("Validation failed", $errors);
-    // }
 }
