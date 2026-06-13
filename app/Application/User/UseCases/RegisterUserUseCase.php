@@ -18,7 +18,7 @@ final class RegisterUserUseCase
         $password = trim($dto->password);
         $confirm  = trim($dto->confirmPassword);
 
-        // 1. Validate password
+        // 1. Validate password match
         if ($password !== $confirm) {
             return [
                 'success' => false,
@@ -26,15 +26,15 @@ final class RegisterUserUseCase
             ];
         }
 
-        // 2. Basic validation
-        if (empty($dto->email) || empty($password)) {
+        // 2. Required fields validation
+        if (empty($dto->email) || empty($password) || empty($dto->name)) {
             return [
                 'success' => false,
-                'errors' => ['Email and password are required']
+                'errors' => ['Name, email and password are required']
             ];
         }
 
-        // 3. Email VO
+        // 3. Validate email (Value Object)
         try {
             $email = new Email($dto->email);
         } catch (\Throwable $e) {
@@ -44,7 +44,7 @@ final class RegisterUserUseCase
             ];
         }
 
-        // 4. Check duplicate email (IMPORTANT DDD RULE)
+        // 4. Check duplicate email
         $existing = $this->repository->findByEmail($dto->email);
 
         if ($existing) {
@@ -54,15 +54,22 @@ final class RegisterUserUseCase
             ];
         }
 
-        // 5. Create User Entity
+        // 5. Hash password
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        // 6. Default role
+        $role = $dto->role ?? 'user';
+
+        // 7. Create User Entity
         $user = new User(
             null,
             $dto->name,
             $email,
-            password_hash($password, PASSWORD_BCRYPT)
+            $hashedPassword,
+            $role
         );
 
-        // 6. Save
+        // 8. Save to repository
         $this->repository->save($user);
 
         return [

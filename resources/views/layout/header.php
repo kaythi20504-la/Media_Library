@@ -13,14 +13,17 @@
 <header class="header">
     <div class="wrapper">
 
+        <!-- LOGO -->
         <h1 class="logo">
             <a href="<?= BASE_URL ?>/Public/index.php?page=home">
                 <img src="<?= BASE_URL ?>/img/Brand-title.png" alt="Media Library">
             </a>
         </h1>
 
+        <!-- NAVIGATION -->
         <ul class="nav">
 
+            <!-- PUBLIC MENU -->
             <li class="<?= (isset($section) && $section === 'books') ? 'on' : '' ?>">
                 <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=books">
                     <img src="<?= BASE_URL ?>/img/book.png">
@@ -49,16 +52,41 @@
                 </a>
             </li>
 
+            <!-- =========================
+                 AUTH SECTION
+            ========================== -->
+
             <?php if (!empty($_SESSION['user_id'])): ?>
 
+                <?php $role = $_SESSION['role'] ?? 'user'; ?>
                 <?php $userName = $_SESSION['username'] ?? 'User'; ?>
 
+                <!-- USER ONLY MENU -->
+                <?php if ($role === 'user'): ?>
+                    <li>
+                        <a href="<?= BASE_URL ?>/Public/index.php?page=my">
+                            My Reservations
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <!-- ADMIN ONLY MENU -->
+                <?php if ($role === 'admin'): ?>
+                    <li>
+                        <a href="<?= BASE_URL ?>/Public/index.php?page=admin/reservations">
+                            Admin Panel
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <!-- USER INFO -->
                 <li>
-                    <span style="color:#fff; font-weight: 500; padding: 0 10px;">
+                    <span style="color:#fff; font-weight:500; padding:0 10px;">
                         👤 <?= htmlspecialchars($userName) ?>
                     </span>
                 </li>
 
+                <!-- LOGOUT -->
                 <li>
                     <a href="<?= BASE_URL ?>/Public/index.php?page=logout">
                         Logout
@@ -67,12 +95,14 @@
 
             <?php else: ?>
 
+                <!-- LOGIN -->
                 <li>
                     <a href="<?= BASE_URL ?>/Public/index.php?page=login">
                         Login
                     </a>
                 </li>
 
+                <!-- REGISTER -->
                 <li>
                     <a href="<?= BASE_URL ?>/Public/index.php?page=register">
                         Register
@@ -86,6 +116,7 @@
     </div>
 </header>
 
+<!-- SEARCH BAR -->
 <?php if (empty($hideSearch)): ?>
 
 <div class="search">

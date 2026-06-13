@@ -41,11 +41,12 @@ final class UserRepository implements UserRepositoryInterface
             return null;
         }
 
-        return new User(
-            (int)$data['id'],
-            $data['name'],
-            new Email($data['email']),
-            $data['password']
-        );
-    }
+      return new User(
+    (int)$data['id'],
+    $data['name'],
+    new Email($data['email']),
+    $data['password'],
+    $data['role']  // important!
+);
+  }
 }

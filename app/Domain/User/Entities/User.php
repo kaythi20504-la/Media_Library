@@ -7,24 +7,28 @@ use App\Domain\User\ValueObjects\Email;
 final class User
 {
     private ?int $id;
-
     private string $name;
-
     private Email $email;
-
     private string $passwordHash;
+    private string $role;
 
     public function __construct(
-        ?int $id,
-        string $name,
-        Email $email,
-        string $passwordHash
-    ) {
-        $this->id = $id;
-        $this->name = $name;
-        $this->email = $email;
-        $this->passwordHash = $passwordHash;
-    }
+    ?int $id,
+    string $name,
+    Email $email,
+    string $passwordHash,
+    string $role
+) {
+    $this->id = $id;
+    $this->name = $name;
+    $this->email = $email;
+    $this->passwordHash = $passwordHash;
+    $this->role = $role;
+}
+public function getRole(): string
+    {
+        return $this->role;
+}
 
     public function getId(): ?int
     {
@@ -45,4 +49,6 @@ final class User
     {
         return $this->passwordHash;
     }
+
+    
 }

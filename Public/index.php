@@ -27,6 +27,8 @@ use App\Presentation\Controllers\AuthController;
 use App\Presentation\Controllers\CatalogController;
 use App\Presentation\Controllers\DetailsController;
 use App\Presentation\Controllers\SuggestController;
+use App\Presentation\Controllers\ReservationController;
+use App\Presentation\Controllers\Admin\ReservationAdminController;
 
 /*
 |-----------------------------
@@ -36,6 +38,7 @@ use App\Presentation\Controllers\SuggestController;
 use App\Infrastructure\Persistence\User\UserRepository;
 use App\Infrastructure\Persistence\Catalog\CatalogRepository;
 use App\Infrastructure\Persistence\Catalog\FormatRepository;
+use App\Infrastructure\Persistence\Reservation\ReservationRepository;
 
 /*
 |-----------------------------
@@ -49,26 +52,30 @@ use App\Application\Catalog\UseCases\GetFormatDataUseCase;
 
 use App\Application\User\UseCases\RegisterUserUseCase;
 use App\Application\User\UseCases\LoginUserUseCase;
+use App\Application\Reservation\UseCases\CreateReservationUseCase;
+use App\Application\Reservation\UseCases\ReserveMediaUseCase;
+use App\Application\Reservation\UseCases\AdminProcessReservationUseCase;
 
 /*
 |-----------------------------
-| DB
+| DATABASE CONNECTION
 |-----------------------------
 */
 $db = Database::connection();
 
 /*
 |-----------------------------
-| REPOSITORIES
+| REPOSITORIES INSTANCES
 |-----------------------------
 */
 $catalogRepo = new CatalogRepository($db);
 $formatRepo  = new FormatRepository($db);
 $userRepo    = new UserRepository($db);
+$reservationRepo = new ReservationRepository($db);
 
 /*
 |-----------------------------
-| USE CASES
+| USE CASES INSTANCES
 |-----------------------------
 */
 $homeUseCase = new GetHomePageUseCase($catalogRepo);
@@ -78,6 +85,9 @@ $formatUseCase = new GetFormatDataUseCase($formatRepo);
 
 $registerUserUseCase = new RegisterUserUseCase($userRepo);
 $loginUserUseCase = new LoginUserUseCase($userRepo);
+$createReservationUseCase = new CreateReservationUseCase($reservationRepo);
+$reservationUseCase = new ReserveMediaUseCase($reservationRepo);
+$adminReservationUseCase = new AdminProcessReservationUseCase($reservationRepo);
 
 /*
 |-----------------------------
@@ -91,19 +101,38 @@ $router = new Router();
 | REGISTER SERVICES
 |-----------------------------
 */
+// Auth
 $router->registerService(AuthController::class, [
     $registerUserUseCase,
     $loginUserUseCase
 ]);
 
+// Catalog
 $router->registerService(CatalogController::class, [
     $homeUseCase,
     $catalogPageUseCase,
     $catalogItemUseCase
 ]);
 
-$router->registerService(DetailsController::class, $catalogItemUseCase);
+// Details
+$router->registerService(DetailsController::class, [
+    $catalogItemUseCase,
+    $reservationRepo
+]);
+
+// Suggest
 $router->registerService(SuggestController::class, $formatUseCase);
+
+// User Reservations
+$router->registerService(ReservationController::class, [
+    $reservationUseCase,
+    $reservationRepo
+]);
+
+// Admin Reservations
+$router->registerService(ReservationAdminController::class, [
+    $reservationRepo
+]);
 
 /*
 |-----------------------------
@@ -112,6 +141,21 @@ $router->registerService(SuggestController::class, $formatUseCase);
 */
 require BASE_PATH . '/routes/web.php';
 require BASE_PATH . '/routes/api.php';
+
+/*
+|-----------------------------
+| ADMIN SPECIFIC ROUTES
+|-----------------------------
+*/
+$router->get('admin/reservations', [
+    ReservationAdminController::class,
+    'index'
+]);
+
+$router->post('admin/reservation/action', [
+    ReservationAdminController::class,
+    'process'
+]);
 
 /*
 |-----------------------------

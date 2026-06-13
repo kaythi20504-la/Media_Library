@@ -21,6 +21,10 @@ final class LoginUserUseCase
                 'errors' => ['Invalid email or password']
             ];
         }
+//         var_dump($dto->email);
+// var_dump($dto->password);
+// var_dump($user->getPasswordHash());
+// exit;
 
         if (!password_verify($dto->password, $user->getPasswordHash())) {
             return [
@@ -30,12 +34,16 @@ final class LoginUserUseCase
         }
 
         return [
-            'success' => true,
-            'user' => [
-                'id' => $user->getId(),
-                'name' => $user->getName(),
-                'email' => $user->getEmail()->value()
-            ]
-        ];
+    'success' => true,
+    'user' => [
+        'id' => $user->getId(),
+        'name' => $user->getName(),
+        'email' => $user->getEmail()->value(),
+        'role' => $user->getRole()
+    ]
+];
+
+
     }
+    
 }

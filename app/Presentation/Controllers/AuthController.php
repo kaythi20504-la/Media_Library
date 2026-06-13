@@ -67,8 +67,9 @@ class AuthController extends BaseController
             return;
         }
 
-        $_SESSION['user_id'] = $result['user']['id'] ?? null;
-        $_SESSION['username'] = $result['user']['name'] ?? null;
+        $_SESSION['user_id'] = $result['user']['id'];
+        $_SESSION['username'] = $result['user']['name'];
+        $_SESSION['role'] = $result['user']['role'];
 
         $this->redirect(BASE_URL . '/Public/index.php?page=home');
     }
